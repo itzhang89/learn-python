@@ -22,27 +22,23 @@
 
 
 
+### 第一次爬取
+
+---
+
+2018/5/23 星期三
+
+存储在20180523_103410.tar.gz 文件中，爬取失败
+
+250行，{'author': '黄易', 'titleName': '魔女殿', 'url': 'http://www.my285.com/wuxia/huangyi/006.htm', 'rule': None, 'title': None}失败
+
+- 主要原因，是该链接是小短文，缺少数据
 
 
-```java
-Stack<Integer> stack1 = new Stack<Integer>();
-Stack<Integer> stack2 = new Stack<Integer>();
 
-public void push(int node) {
-    stack2.add(node);
-}
+### 第二次爬取
 
-public int pop() {
-    if (stack1.isEmpty()) {
-        if (!stack2.isEmpty()) {
-            while (!stack2.isEmpty()) {
-                stack1.add(stack2.pop());
-            }
-        }
-    }
-    return stack1.pop();
-}
-```
+2018/5/23 星期三
 
-
+从前面250行开始爬取。
 
