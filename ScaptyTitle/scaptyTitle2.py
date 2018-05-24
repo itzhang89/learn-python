@@ -9,12 +9,31 @@ import os
 import re
 from datetime import datetime
 
-import ScratchUtils as Utils
 import bs4
 import requests
 
 startUrl = "http://www.my285.com/"
 nowDataStr = datetime.now().strftime("%Y%m%d")
+
+
+def setup_logging(
+        default_path='logs/logging.json',
+        default_level=logging.INFO,
+        env_key='LOG_CFG'
+):
+    """Setup logging configuration
+
+    """
+    path = default_path
+    value = os.getenv(env_key, None)
+    if value:
+        path = value
+    if os.path.exists(path):
+        with open(path, 'rt') as f:
+            config = json.load(f)
+        logging.config.dictConfig(config)
+    else:
+        logging.basicConfig(level=default_level)
 
 
 def parseFullUrl(url, rule, session=None, decodeType='gbk'):
@@ -108,19 +127,18 @@ class Title(json.JSONEncoder):
 
 
 def parseTitle(titles, session=None):
-    count = 0
     # 存入错误列表
     errorList = []
     # 存入已经爬取的数据
     captes = []
     Rules = ["td[bgcolor='#EEF8FF'] a[href]", "td[bgcolor='#FFFFFF'] a[href]"]
-    result = None
     count = 0
     for title in titles:
         count += 1
         if count % 10:
             logging.info("已经打印了 %d 行", count)
         try:
+            result = None
             for rule in Rules:
                 result = parseTitleUrl(title, errorList, session, rule)
                 if result:
@@ -157,7 +175,8 @@ def parseTitleUrl(titleObj, errorList=None, session=None, defaultRule=None):
 
     if not titleObj.rule:
         rule = defaultRule
-    if not titleObj.rule:
+
+    if not rule:
         return None
 
     # 将文章地址进行分类
@@ -224,7 +243,7 @@ def parseMulitPageUrl(titleObj, session, rule, errorList):
 
 def writeToFile(authorName, titleName, context, parentFilePath):
     if not os.path.exists(parentFilePath):
-        os.mkdir(parentFilePath)
+        os.makedirs(parentFilePath)
 
     if os.path.isdir(parentFilePath):
         try:
@@ -325,20 +344,12 @@ def loadVariableFromJson(fileName, encoding='utf-8'):
 
 
 if __name__ == "__main__":
-    Utils.setup_logging()
+    # 设置论文格式
+    setup_logging()
     session = requests.Session()
     session.get(startUrl)  # 设置回话
-    # logging.info("---------解析所有文章的内容-------")
-    # titles = loadVariableFromJson("./titles20180523_09_14_25.json")
-    # parseTitle(titles, session)
-    # # dumpVariableToJson(titles, "titles")
-    # logging.info("--------over----------")
-    titleStr = "{'author': '金庸', 'titleName': '射雕英雄传', 'url': 'http://www.my285.com/wuxia/jinyong/sdyxz/index.htm', 'rule': None, 'title': None}"
-    titleObj = Title.valueOf(titleStr)
-
-    session = requests.Session()
-    session.get(titleObj.url)  # 设置回话
-    rule = "td[bgcolor='#FFFFFF'] a[href]"
-    errorList = []
-    titleObj = parseMulitPageUrl(titleObj, session, rule, errorList=errorList)
-    print(errorList)
+    logging.info("---------解析所有文章的内容-------")
+    titles = loadVariableFromJson("./titles20180523_09_14_25.json")
+    parseTitle(titles, session)
+    # dumpVariableToJson(titles, "titles")
+    logging.info("--------over----------")
