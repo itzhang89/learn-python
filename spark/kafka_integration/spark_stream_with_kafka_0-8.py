@@ -4,7 +4,7 @@ from pyspark.streaming.kafka import KafkaUtils
 """
 # guide link: https://spark.apache.org/docs/latest/streaming-kafka-integration.html
 run script
-$ /opt/spark/bin/spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.4.5 receive_message_from_kafka.py
+$ /opt/spark/bin/spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.4.5 spark_sql_with_kafka_0-10.py
 """
 
 spark = SparkSession.builder.appName(name="kafka test").getOrCreate()
