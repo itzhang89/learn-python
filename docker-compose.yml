@@ -1,0 +1,16 @@
+version: '3.7'
+services:
+  spark-standalone:
+    image: 5200710/spark:2.4.4-standalone
+    ports:
+      - 8080:8080
+      - 8081:8081
+      - 7077:7077
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 2m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ./spark:/spark
