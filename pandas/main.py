@@ -3,6 +3,18 @@ import pandas as pd
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 
+NULLABLE = 'NULLABLE'
+
+DATA_PRECISION = 'DATA_PRECISION'
+
+DATA_LENGTH = 'DATA_LENGTH'
+
+DATA_TYPE = 'DATA_TYPE'
+
+COLUMN_NAME = 'COLUMN_NAME'
+
+TABLE_NAME = 'TABLE_NAME'
+
 
 def create_table_ddl_fs(db_name: str, table_name, fileds: list):
     fileds_str = ",".join(map(str.lower, fileds))
@@ -23,49 +35,38 @@ def is_empty(field) -> bool:
     return False
 
 
+isNullable = {'Y': True, 'N': False}
+
+
 def get_field_column_definition(series) -> str:
-    field_name: str = str(series["source_column_name"]).strip()
-    if is_empty(field_name):
+    column_name: str = str(series[COLUMN_NAME]).strip()
+    if is_empty(column_name):
         return ''
 
     # generate data type
-    column_type = str(series["column_type"]).strip()
-    column_length = series["column_length"]
-    dig_length = series["小数位数（sql server）"]
-    data_type = column_type
-    if column_type == 'nvarchar':
-        if not is_empty(column_length):
-            data_type = '{}({})'.format(column_type, column_length)
-    elif column_type == 'bigint' or \
-            column_type == 'decimal' or \
-            column_type == 'float' or \
-            column_type == 'int' or \
-            column_type == 'numeric':
-        if not is_empty(dig_length):
-            data_type = '{}({})'.format(column_type, dig_length)
+    column_type = str(series[DATA_TYPE]).strip()
+    column_length = str(series[DATA_LENGTH]).strip()
+    precision = str(series[DATA_PRECISION]).strip()
+    if is_empty(precision):
+        column_type = "{}({},{})".format(column_type, column_length, precision)
+    else:
+        column_type = "{}({})".format(column_type, column_length)
 
-    # generate data constraints
-    is_nullable = str(series["is_nullable"]).strip()
-    constraint = "NOT NULL" if is_nullable == '1' else ""
+    is_nullable = "NOT NULL" if series[NULLABLE] else ""
 
-    is_PK = str(series["is_PK"]).strip()
-    if float(is_PK) == 1.0:
-        constraint += " PRIMARY KEY"
-
-    return '{field_name} {data_type} {constraint}'.format(field_name=field_name, data_type=data_type, constraint=constraint)
+    return '{column_name} {column_type} {constraint}'.format(column_name=column_name, column_type=column_type,
+                                                             constraint=is_nullable)
 
 
 if __name__ == '__main__':
     # pd.read_excel('tmp.xlsx', index_col=0)
-    xlsx = "../Melco_Opera.xlsx"
-    df: DataFrame = pd.read_excel(xlsx, sheet_name="ODS", index_col=0)
+    xlsx = "../ALL_TAB_COLS_202201171108.csv"
+    # TABLE_NAME,COLUMN_NAME,DATA_TYPE,DATA_LENGTH,DATA_PRECISION,NULLABLE,CHARACTER_SET_NAME
+    df: DataFrame = pd.read_csv(xlsx, header=0).drop(['CHARACTER_SET_NAME'], axis=1)
+    df[NULLABLE] = df[NULLABLE].map(isNullable).astype(bool)
 
-    create_sql_df = pd.DataFrame(df,
-                                 columns=['source_table_name', 'source_column_name', 'column_type', 'column_length',
-                                          '小数位数（sql server）',
-                                          'is_PK', 'is_nullable'])
-
-    sql_df_groupby: DataFrameGroupBy = create_sql_df.groupby('source_table_name')
+    print(df.info())
+    sql_df_groupby: DataFrameGroupBy = df.groupby(TABLE_NAME)
 
     for db_name, sub_df in sql_df_groupby:
         pd_column = sub_df.apply(get_field_column_definition, axis=1)
