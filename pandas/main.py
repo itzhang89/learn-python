@@ -55,6 +55,11 @@ def is_empty(field) -> bool:
 
 isNullable = {'Y': True, 'N': False}
 
+# oracle_to_hive = {
+#     "varchar2": "varchar",
+#     "number":
+# }
+
 
 def get_field_column_definition(series) -> str:
     column_name: str = str(series[COLUMN_NAME]).strip()
@@ -101,5 +106,8 @@ if __name__ == '__main__':
 
     for db_name, sub_df in sql_df_groupby:
         pd_column = sub_df.apply(get_field_column_definition, axis=1)
-        print(create_table_ddl_fs("melco_opera", table_name_fm(sys_name='opera', db_name='operastaging', table_name=db_name),
-                                  np.array(pd_column)))
+        ddl_string = create_table_ddl_fs("melco_opera",
+                                         table_name_fm(sys_name='opera', db_name='operastaging', table_name=db_name),
+                                         np.array(pd_column))
+        with open("../target/{}.ddl.sql".format(str(db_name).lower()), 'w') as file:
+            file.write(ddl_string)
