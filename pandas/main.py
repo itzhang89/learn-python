@@ -18,6 +18,10 @@ COLUMN_NAME = 'COLUMN_NAME'
 TABLE_NAME = 'TABLE_NAME'
 
 
+def format_name(name: str):
+    return name.join(['`', '`']) if name.find('$') != -1 else name
+
+
 def create_table_ddl_fs(db_name: str, table_name, fileds: list):
     fileds_str = ",".join(map(str.lower, fileds))
     return 'CREATE TABLE IF NOT EXISTS {}.{} ( {} ) PARTITIONED BY ( year string, month string, day string)'.format(
@@ -35,11 +39,7 @@ def table_name_fm(sys_name: str, table_name: str, pre_ods: bool = False, db_name
     if schema_name:
         items.append(schema_name)
     items.append(table_name)
-    full_table_name = "__".join(items)
-
-    if full_table_name.find('$') != -1:
-        full_table_name = '`' + full_table_name + '`'
-    return full_table_name
+    return format_name("__".join(items))
 
 
 def is_empty(field) -> bool:
@@ -67,7 +67,7 @@ oracle_to_hive: dict = {
 
 
 def get_field_column_definition(series) -> str:
-    column_name: str = str(series[COLUMN_NAME]).strip()
+    column_name: str = format_name(str(series[COLUMN_NAME]).strip())
     if is_empty(column_name):
         return ''
 
