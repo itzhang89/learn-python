@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
@@ -55,10 +57,13 @@ def is_empty(field) -> bool:
 
 isNullable = {'Y': True, 'N': False}
 
-# oracle_to_hive = {
-#     "varchar2": "varchar",
-#     "number":
-# }
+# re.sub(r"(\d.*?)\s(\d.*?)", r"\1 \2", string1)
+oracle_to_hive: dict = {
+    r"varchar2": r"varchar",
+    r"date\(\d+\)": r"date",
+    r"number\((\d+),(\d+)\)": r"decimal(\1,\2)",
+    r"number\(22\)": r"int"
+}
 
 
 def get_field_column_definition(series) -> str:
@@ -76,6 +81,10 @@ def get_field_column_definition(series) -> str:
         column_type = "{}({})".format(column_type, round(column_length))
     else:
         column_type = "{}({},{})".format(column_type, round(column_length), round(precision))
+
+    # 替换数据类型
+    for r_key, r_val in oracle_to_hive.items():
+        column_type = re.sub(r_key, r_val, column_type, flags=re.IGNORECASE)
 
     is_nullable = "NOT NULL" if series[NULLABLE] else ""
 
