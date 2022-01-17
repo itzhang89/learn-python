@@ -86,7 +86,7 @@ def get_field_column_definition(series) -> str:
     for r_key, r_val in oracle_to_hive.items():
         column_type = re.sub(r_key, r_val, column_type, flags=re.IGNORECASE)
 
-    is_nullable = "NOT NULL" if series[NULLABLE] else ""
+    is_nullable = "" if series[NULLABLE] else "NOT NULL"
 
     return '{column_name} {column_type} {constraint}'.format(column_name=column_name, column_type=column_type,
                                                              constraint=is_nullable)
