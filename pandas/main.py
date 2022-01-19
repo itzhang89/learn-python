@@ -115,7 +115,9 @@ def read_hive_df() -> DataFrame:
     return df
 
 
-def create_ddl(df: DataFrame, *selected_columns):
+def create_ddl(df: DataFrame, selected_columns: list[str], save=False):
+    selected_columns = list(map(lambda x: str(x).upper(), selected_columns)) + list(
+        map(lambda x: str(x).lower(), selected_columns))
     df = df[df[TABLE_NAME].isin(selected_columns)]
     sql_df_groupby: DataFrameGroupBy = df.groupby(TABLE_NAME)
     for tb_name, sub_df in sql_df_groupby:
@@ -123,16 +125,16 @@ def create_ddl(df: DataFrame, *selected_columns):
         ddl_string = create_table_ddl_fs("melco_opera",
                                          table_name_fm(sys_name='opera', db_name='operastaging', table_name=tb_name),
                                          np.array(pd_column))
-        # with open("../target/{}.ddl.sql".format(str(tb_name).lower()), 'w') as file:
-        #     file.write(ddl_string)
+        if not save:
+            print(ddl_string)
+        else:
+            with open("../target/{}.ddl.sql".format(str(tb_name).lower()), 'w') as file:
+                file.write(ddl_string)
 
 
 if __name__ == '__main__':
-    yb_selected_tb = ['E_PMS_HIST_FORECAST_SUMMARY']
     yb_df = read_yb_df()
-    yb_df = yb_df[yb_df[TABLE_NAME].isin(yb_selected_tb)]
-
-    print(yb_df[[TABLE_NAME, COLUMN_NAME]])
+    create_ddl(yb_df, ['E_PMS_HIST_FORECAST_SUMMARY'])
 
     #  select 21 table name
     # hive_selected_tb = ['FORECAST_SUMMARY', 'allotment$detail', 'Memberships', 'name_view', 'reservation_items',
@@ -142,10 +144,5 @@ if __name__ == '__main__':
     #                    'RESERVATION_NAME', 'NAME_PHONE', 'RESERVATION_COMMENT', 'name_address', 'postal_codes_chain',
     #                    'name_address', 'postal_codes_chain']
 
-    hive_selected_tb = ['FORECAST_SUMMARY']
     hive_df: DataFrame = read_hive_df()
-
-    hive_selected_tb = list(map(str.upper, hive_selected_tb))
-    print(hive_selected_tb)
-
-    create_ddl()
+    create_ddl(hive_df, ['FORECAST_SUMMARY'])
