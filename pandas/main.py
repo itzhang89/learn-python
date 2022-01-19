@@ -2,6 +2,7 @@ import re
 
 import numpy as np
 import pandas as pd
+from numpy import ndarray
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 
@@ -132,9 +133,31 @@ def create_ddl(df: DataFrame, selected_columns: list[str], save=False):
                 file.write(ddl_string)
 
 
+def select_tb(df: DataFrame, tb_name: str) -> DataFrame:
+    return df[df[TABLE_NAME].isin([tb_name.upper(), tb_name.lower()])]
+
+
+def mathed_columns(hive_columns: list[str], yb_columns: list[str]):
+    for hive_column in hive_columns:
+        if hive_column.lower() in yb_columns:
+            print(hive_column, " AS ", hive_column)
+            yb_columns.remove(hive_column)
+        elif hive_column.upper() in yb_columns:
+            print(hive_column, " AS ", hive_column)
+            yb_columns.remove(hive_column)
+        else:
+            print(hive_column)
+
+    print("not removed ", yb_columns)
+
+
 if __name__ == '__main__':
     yb_df = read_yb_df()
-    create_ddl(yb_df, ['E_PMS_HIST_FORECAST_SUMMARY'])
+    yb_df = select_tb(yb_df, 'E_PMS_HIST_FORECAST_SUMMARY')
+    yb_tb_columns = np.array(yb_df[COLUMN_NAME].map(str.strip)).tolist()
+
+    print(yb_tb_columns)
+    # create_ddl(yb_df, ['E_PMS_HIST_FORECAST_SUMMARY'])
 
     #  select 21 table name
     # hive_selected_tb = ['FORECAST_SUMMARY', 'allotment$detail', 'Memberships', 'name_view', 'reservation_items',
@@ -145,4 +168,9 @@ if __name__ == '__main__':
     #                    'name_address', 'postal_codes_chain']
 
     hive_df: DataFrame = read_hive_df()
-    create_ddl(hive_df, ['FORECAST_SUMMARY'])
+    hive_df = select_tb(hive_df, 'FORECAST_SUMMARY')
+    hive_tb_columns = np.array(hive_df[COLUMN_NAME].map(str.strip)).tolist()
+
+    print(hive_tb_columns)
+    # create_ddl(hive_df, ['FORECAST_SUMMARY'])
+    mathed_columns(hive_tb_columns, yb_tb_columns)
