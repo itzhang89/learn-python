@@ -5,6 +5,8 @@ import pandas as pd
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 
+PK = "PK"
+
 NULLABLE = 'NULLABLE'
 
 DATA_PRECISION = 'DATA_PRECISION'
@@ -55,7 +57,8 @@ def is_empty(field) -> bool:
     return False
 
 
-isNullable = {'Y': True, 'N': False}
+isNullable = {'Y': True, 'N': False,
+              '1': True, '0': False}
 
 # re.sub(r"(\d.*?)\s(\d.*?)", r"\1 \2", string1)
 oracle_to_hive: dict = {
@@ -92,31 +95,57 @@ def get_field_column_definition(series) -> str:
                                                              constraint=is_nullable)
 
 
-if __name__ == '__main__':
-    # pd.read_excel('tmp.xlsx', index_col=0)
-    xlsx = "../ALL_TAB_COLS_202201171108.csv"
+def read_yb_df() -> DataFrame:
+    yb_xlsx = "../Melco_Opera.xlsx"
+    yb_df: DataFrame = pd.read_excel(yb_xlsx, sheet_name="ODS", header=0, index_col=0)
+    yb_df[NULLABLE] = yb_df["is_nullable"].map(lambda x: isNullable.get(x, False)).astype(bool)
+    yb_df[PK] = yb_df["is_PK"].map(lambda x: isNullable.get(x, False)).astype(bool)
+    yb_df[DATA_PRECISION] = yb_df["小数位数（sql server）"].map(lambda x: round(x) if str(x).isdigit() else x)
+    yb_df[DATA_LENGTH] = yb_df["column_length"].map(lambda x: round(x) if str(x).isdigit() else x)
+    return yb_df.rename(
+        columns={"source_table_name": TABLE_NAME, "source_column_name": COLUMN_NAME, "column_type": DATA_TYPE},
+        errors="raise")[[TABLE_NAME, COLUMN_NAME, DATA_TYPE, DATA_LENGTH, DATA_PRECISION, NULLABLE, PK]]
+
+
+def read_hive_df() -> DataFrame:
+    hive_csv = "../ALL_TAB_COLS_202201171108.csv"
     # TABLE_NAME,COLUMN_NAME,DATA_TYPE,DATA_LENGTH,DATA_PRECISION,NULLABLE,CHARACTER_SET_NAME
-    df: DataFrame = pd.read_csv(xlsx, header=0).drop(['CHARACTER_SET_NAME'], axis=1)
+    df: DataFrame = pd.read_csv(hive_csv, header=0).drop(['CHARACTER_SET_NAME'], axis=1)
     df[NULLABLE] = df[NULLABLE].map(isNullable).astype(bool)
+    return df
 
-    #  select 21 table name
-    selected_tables = ['FORECAST_SUMMARY', 'allotment$detail', 'Memberships', 'name_view', 'reservation_items',
-                       'RESERVATION_DAILY_ELEMENT_NAME', 'RESERVATION_NAME', 'reservation_products', 'trx_routing_instructions',
-                       'RESERVATION_SUMMARY', 'EXTERNAL_REFERENCES', 'RESERVATION_SUMMARY', 'FORECAST_SUMMARY',
-                       'allotment$header', 'NAME', 'RESERVATION_DAILY_ELEMENTS', 'RESERVATION_DAILY_ELEMENT_NAME',
-                       'RESERVATION_NAME', 'NAME_PHONE', 'RESERVATION_COMMENT', 'name_address', 'postal_codes_chain',
-                       'name_address', 'postal_codes_chain']
 
-    selected_tables = list(map(str.upper, selected_tables))
-    print(selected_tables)
-
-    df = df[df[TABLE_NAME].isin(selected_tables)]
+def create_ddl(df: DataFrame, *selected_columns):
+    df = df[df[TABLE_NAME].isin(selected_columns)]
     sql_df_groupby: DataFrameGroupBy = df.groupby(TABLE_NAME)
-
-    for db_name, sub_df in sql_df_groupby:
+    for tb_name, sub_df in sql_df_groupby:
         pd_column = sub_df.apply(get_field_column_definition, axis=1)
         ddl_string = create_table_ddl_fs("melco_opera",
-                                         table_name_fm(sys_name='opera', db_name='operastaging', table_name=db_name),
+                                         table_name_fm(sys_name='opera', db_name='operastaging', table_name=tb_name),
                                          np.array(pd_column))
-        with open("../target/{}.ddl.sql".format(str(db_name).lower()), 'w') as file:
-            file.write(ddl_string)
+        # with open("../target/{}.ddl.sql".format(str(tb_name).lower()), 'w') as file:
+        #     file.write(ddl_string)
+
+
+if __name__ == '__main__':
+    yb_selected_tb = ['E_PMS_HIST_FORECAST_SUMMARY']
+    yb_df = read_yb_df()
+    yb_df = yb_df[yb_df[TABLE_NAME].isin(yb_selected_tb)]
+
+    print(yb_df[[TABLE_NAME, COLUMN_NAME]])
+
+    #  select 21 table name
+    # hive_selected_tb = ['FORECAST_SUMMARY', 'allotment$detail', 'Memberships', 'name_view', 'reservation_items',
+    #                    'RESERVATION_DAILY_ELEMENT_NAME', 'RESERVATION_NAME', 'reservation_products', 'trx_routing_instructions',
+    #                    'RESERVATION_SUMMARY', 'EXTERNAL_REFERENCES', 'RESERVATION_SUMMARY', 'FORECAST_SUMMARY',
+    #                    'allotment$header', 'NAME', 'RESERVATION_DAILY_ELEMENTS', 'RESERVATION_DAILY_ELEMENT_NAME',
+    #                    'RESERVATION_NAME', 'NAME_PHONE', 'RESERVATION_COMMENT', 'name_address', 'postal_codes_chain',
+    #                    'name_address', 'postal_codes_chain']
+
+    hive_selected_tb = ['FORECAST_SUMMARY']
+    hive_df: DataFrame = read_hive_df()
+
+    hive_selected_tb = list(map(str.upper, hive_selected_tb))
+    print(hive_selected_tb)
+
+    create_ddl()
