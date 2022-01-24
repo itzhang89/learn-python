@@ -2,7 +2,6 @@ import re
 
 import numpy as np
 import pandas as pd
-from numpy import ndarray
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 
@@ -137,23 +136,24 @@ def select_tb(df: DataFrame, tb_name: str) -> DataFrame:
     return df[df[TABLE_NAME].isin([tb_name.upper(), tb_name.lower()])]
 
 
-def mathed_columns(hive_columns: list[str], yb_columns: list[str]):
-    for hive_column in hive_columns:
-        if hive_column.lower() in yb_columns:
-            print(hive_column, " AS ", hive_column)
-            yb_columns.remove(hive_column)
-        elif hive_column.upper() in yb_columns:
-            print(hive_column, " AS ", hive_column)
-            yb_columns.remove(hive_column)
+def mathed_yb_columns(yb_columns: list[str], hive_columns: list[str]):
+    for yb_column in yb_columns:
+        if yb_column.lower() in hive_columns:
+            print(f"`{yb_column.lower()}` AS `{yb_column}`,")
+            hive_columns.remove(yb_column.lower())
+        elif yb_column.upper() in hive_columns:
+            print(f"`{yb_column.upper()}` AS `{yb_column}`,")
+            hive_columns.remove(yb_column.upper())
         else:
-            print(hive_column)
+            print(f"{yb_column},")
 
-    print("not removed ", yb_columns)
+    print("not removed yb: ", yb_columns)
+    print("not removed hive: ", hive_columns)
 
 
 if __name__ == '__main__':
     yb_df = read_yb_df()
-    yb_df = select_tb(yb_df, 'E_PMS_HIST_FORECAST_SUMMARY')
+    yb_df = select_tb(yb_df, 'E_PMS_HIST_MEMBERSHIPS')
     yb_tb_columns = np.array(yb_df[COLUMN_NAME].map(str.strip)).tolist()
 
     print(yb_tb_columns)
@@ -168,9 +168,9 @@ if __name__ == '__main__':
     #                    'name_address', 'postal_codes_chain']
 
     hive_df: DataFrame = read_hive_df()
-    hive_df = select_tb(hive_df, 'FORECAST_SUMMARY')
+    hive_df = select_tb(hive_df, 'Memberships')
     hive_tb_columns = np.array(hive_df[COLUMN_NAME].map(str.strip)).tolist()
 
     print(hive_tb_columns)
     # create_ddl(hive_df, ['FORECAST_SUMMARY'])
-    mathed_columns(hive_tb_columns, yb_tb_columns)
+    mathed_yb_columns(yb_tb_columns, hive_tb_columns)
