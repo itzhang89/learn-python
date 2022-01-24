@@ -147,17 +147,16 @@ def mathed_yb_columns(yb_columns: list[str], hive_columns: list[str]):
         else:
             print(f"{yb_column},")
 
-    print("not removed yb: ", yb_columns)
     print("not removed hive: ", hive_columns)
 
 
 if __name__ == '__main__':
     yb_df = read_yb_df()
-    yb_df = select_tb(yb_df, 'E_PMS_HIST_MEMBERSHIPS')
+    yb_df = select_tb(yb_df, 'E_PMS_HIST_PROFILE')
     yb_tb_columns = np.array(yb_df[COLUMN_NAME].map(str.strip)).tolist()
 
     print(yb_tb_columns)
-    # create_ddl(yb_df, ['E_PMS_HIST_FORECAST_SUMMARY'])
+    # create_ddl(yb_df, ['name_view'])
 
     #  select 21 table name
     # hive_selected_tb = ['FORECAST_SUMMARY', 'allotment$detail', 'Memberships', 'name_view', 'reservation_items',
@@ -168,9 +167,12 @@ if __name__ == '__main__':
     #                    'name_address', 'postal_codes_chain']
 
     hive_df: DataFrame = read_hive_df()
-    hive_df = select_tb(hive_df, 'Memberships')
+    hive_df = select_tb(hive_df, 'name_view')
     hive_tb_columns = np.array(hive_df[COLUMN_NAME].map(str.strip)).tolist()
 
-    print(hive_tb_columns)
+    for x in hive_tb_columns:
+        print(f'`{x}` AS `{x}`,')
+    print("\n\n")
+
     # create_ddl(hive_df, ['FORECAST_SUMMARY'])
     mathed_yb_columns(yb_tb_columns, hive_tb_columns)
