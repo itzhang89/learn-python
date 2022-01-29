@@ -152,7 +152,7 @@ def mathed_yb_columns(yb_columns: list[str], hive_columns: list[str]):
 
 if __name__ == '__main__':
     yb_df = read_yb_df()
-    yb_df = select_tb(yb_df, 'E_PMS_HIST_PROFILE')
+    yb_df = select_tb(yb_df, 'E_PMS_HIST_RESERVATION_DAILY_ELEMENT_NAME_FOLIO')
     yb_tb_columns = np.array(yb_df[COLUMN_NAME].map(str.strip)).tolist()
 
     print(yb_tb_columns)
@@ -167,7 +167,13 @@ if __name__ == '__main__':
     #                    'name_address', 'postal_codes_chain']
 
     hive_df: DataFrame = read_hive_df()
-    hive_df = select_tb(hive_df, 'name_view')
+    # "NAME
+    # RESERVATION_DAILY_ELEMENTS
+    # RESERVATION_DAILY_ELEMENT_NAME
+    # RESERVATION_NAME
+    # NAME_PHONE
+    # RESERVATION_COMMENT"
+    hive_df = select_tb(hive_df, 'NAME')
     hive_tb_columns = np.array(hive_df[COLUMN_NAME].map(str.strip)).tolist()
 
     for x in hive_tb_columns:
