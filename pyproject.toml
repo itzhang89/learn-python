@@ -8,6 +8,11 @@ authors = ["Jinghui Zhang <30542109+yutianaiqingtian@users.noreply.github.com>"]
 python = "^3.9"
 pandas = "^1.3.5"
 openpyxl = "^3.0.9"
+pylint = "^2.12.2"
+jupyter = "^1.0.0"
+matplotlib = "^3.5.1"
+seaborn = "^0.11.2"
+sns = "^0.1"
 
 [tool.poetry.dev-dependencies]
 
