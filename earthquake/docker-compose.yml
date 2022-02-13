@@ -1,0 +1,24 @@
+version: '3.7'
+services:
+  spark-standalone:
+    image: continuumio/anaconda3:2020.02
+    ports:
+      - 8888:8888
+    command: [ "/bin/bash","-c", "conda install jupyter -y --quiet && mkdir -p /opt/notebooks && jupyter notebook \
+    --notebook-dir=/opt/notebooks --ip='*' --port=8888 --no-browser --allow-root" ]
+    volumes:
+      - ./:/opt/notebooks
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8888" ]
+      interval: 2m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '0.25'
+          memory: 20M
