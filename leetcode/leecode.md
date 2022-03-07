@@ -103,3 +103,21 @@
 将最终结果插入 nums 的前 k 个位置后返回 k 。
 
 不要使用额外的空间，你必须在 原地 修改输入数组 并在使用 O(1) 额外空间的条件下完成。
+
+#### 解决思路1
+
+1. 排序后的元素，相同的元素肯定都连在一起
+2. 依次的采用2个指针遍历数组
+3. 快的数组依次找出不同的元素，然后将元素复制到慢的元素位置
+
+```
+    def removeDuplicates(self, nums: List[int]) -> int:
+        slow, fast = 0, 1
+        while fast < len(nums):
+            if nums[slow] != nums[fast]:
+                slow += 1
+                nums[slow] = nums[fast]
+            fast += 1
+        return slow + 1
+```
+
