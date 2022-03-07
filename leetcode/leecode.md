@@ -69,28 +69,13 @@
 3. 如果遍历第一个字符后，如果发现第二个数组还有多的元素，也判断失败。
 
 ```python
-    def isAnagram(self, s: str, t: str) -> bool:
-        s_dict = {}
-        for s_ele in s:
-            if s_ele in s_dict:
-                s_dict[s_ele] = s_dict[s_ele] + 1
-            else:
-                s_dict[s_ele] = 1
-        t_dict = {}
-        for t_ele in t:
-            if t_ele in t_dict:
-                t_dict[t_ele] = t_dict[t_ele] + 1
-            else:
-                t_dict[t_ele] = 1
-
-        flag = True
-        for k, v in s_dict.items():
-            if k in t_dict and t_dict[k] == v:
-                t_dict.pop(k)
-                continue
-            flag = False
-            break
-        return False if len(t_dict.keys()) != 0 else flag
+    def isAnagram1(self, s: str, t: str) -> bool:
+        s_dict, t_dict = {}, {}
+        for e in s:
+            s_dict[e] = s_dict.get(e, 0) + 1
+        for e in t:
+            t_dict[e] = t_dict.get(e, 0) + 1
+        return t_dict == s_dict
 ```
 
 时间复杂度为：2*O(m)+O(n)
@@ -100,7 +85,21 @@
 1. 将2个输入的字符串进行排序（通过快排O(nlog(n))
 2. 比较两个排序后的字符串的大小
 
+```python
+    def isAnagram1(self, s: str, t: str) -> bool:
+        return sorted(t) == sorted(s)
 ```
 
-```
 
+
+## stormzhang算法训练营
+
+### [26. 删除有序数组中的重复项](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-array/)
+
+给你一个 升序排列 的数组 nums ，请你 原地 删除重复出现的元素，使每个元素 只出现一次 ，返回删除后数组的新长度。元素的 相对顺序 应该保持 一致 。
+
+由于在某些语言中不能改变数组的长度，所以必须将结果放在数组nums的第一部分。更规范地说，如果在删除重复项之后有 k 个元素，那么 nums 的前 k 个元素应该保存最终结果。
+
+将最终结果插入 nums 的前 k 个位置后返回 k 。
+
+不要使用额外的空间，你必须在 原地 修改输入数组 并在使用 O(1) 额外空间的条件下完成。
