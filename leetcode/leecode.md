@@ -186,3 +186,20 @@
         return head
 ```
 
+### [283. 移动零](https://leetcode-cn.com/problems/move-zeroes/)
+
+同前面一样，过滤0的元素并且向前移动，到末尾都填充0
+
+```
+    def moveZeroes(self, nums: List[int]) -> None:
+        slow, fast = 0, 0
+        while fast < len(nums):
+            if nums[fast] != 0:
+                nums[slow] = nums[fast]
+                slow += 1
+            fast += 1
+        while slow < len(nums):
+            nums[slow] = 0
+            slow += 1
+```
+
