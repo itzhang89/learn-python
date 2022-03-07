@@ -171,3 +171,18 @@
 ```
 
 可以快速的理解，就是前面指针在过滤，将过滤好的元素依次的插入前面的指针中。
+
+### [83. 删除排序链表中的重复元素](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list/)
+
+```
+    def deleteDuplicates(self, head: ListNode) -> ListNode:
+        slow, fast = head, head
+        while fast:
+            if slow.val != fast.val:
+                slow.next = fast
+                slow = slow.next
+            fast = fast.next
+        slow.next = None  # 断开与后面元素的联系
+        return head
+```
+
