@@ -38,6 +38,33 @@
 
 2个字典中比较会比较所有的元素是否都相等。
 
+## 初始化数组
+
+1. 通过Ranger来循环
+
+   ```python
+   [value for element in range(num)]
+   ```
+
+2. 通过Numpy 模块
+
+   ```
+   import numpy as np
+   arr = np.empty(10, dtype=object) 
+   ```
+
+3. 通过方法来初始化
+
+   ```
+   arr_num = [0] * 5
+   print(arr_num)
+    
+   arr_str = ['P'] * 10
+   print(arr_str)
+   ```
+
+   
+
 # LeetCode
 
 ## 基础题库
@@ -201,5 +228,70 @@
         while slow < len(nums):
             nums[slow] = 0
             slow += 1
+```
+
+[小而美的算法技巧：前缀和数组 :: labuladong的算法小抄](https://labuladong.gitee.io/algo/2/22/56/)
+
+### [560. 和为 K 的子数组](https://leetcode-cn.com/problems/subarray-sum-equals-k/)
+
+给你一个整数数组 `nums` 和一个整数 `k` ，请你统计并返回该数组中和为 `k` 的连续子数组的个数。
+
+#### 解题思路1
+
+**利用求前缀和** 的思路，计算出前n个元素的和
+
+1. 依次计算2个前缀和之间的差值
+2. 判断是否为k。
+
+这种方法的时间复杂度为O(n) + O(n2)，时间上过不去
+
+```
+    def subarraySum(self, nums, k):
+        preSumNums = [0] * (len(nums) + 1)
+        i, cnt = 0, 0
+        while i < len(nums):
+            preSumNums[i + 1] = preSumNums[i] + nums[i]
+
+        i = 0
+        while i < len(nums):
+            j = i
+            while j < len(nums):
+                if preSumNums[j] == nums[i] + k:
+                    cnt += 1
+            i += 1
+        return cnt
+```
+
+#### 解题思路2
+
+将计算 presum[j] - presum[i] = k，通过Hash 来转换。将**前缀和放入到Hash中减少一次嵌套的循环**。
+
+```
+    def subarraySum(self, nums, k):
+        preSumNums = [0] * (len(nums) + 1)
+        cntDict = {0: 1}
+        i, cnt = 0, 0
+        while i < len(nums):
+            preSumNums[i + 1] = preSumNums[i] + nums[i]
+            cnt += cntDict.get(preSumNums[i + 1] - k, 0)
+            cntDict[preSumNums[i + 1]] = cntDict.get(preSumNums[i + 1], 0) + 1
+            i += 1
+        return cnt
+```
+
+优化点，就是不重新定义新数组，复用现有nums数组
+
+```
+    def subarraySum(self, nums, k):
+        i, cnt = 1, 0
+        cntDict = {0: 1}
+        cnt += cntDict.get(nums[0] - k, 0)
+        cntDict[nums[0]] = cntDict.get(nums[0], 0) + 1
+        while i < len(nums):
+            nums[i] += nums[i - 1]
+            cnt += cntDict.get(nums[i] - k, 0)
+            cntDict[nums[i]] = cntDict.get(nums[i], 0) + 1
+            i += 1
+        return cnt
 ```
 
