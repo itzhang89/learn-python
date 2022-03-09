@@ -309,3 +309,64 @@ int sumRegion(int row1, int col1, int row2, int col2) 返回 左上角 (row1, co
 
 
 
+### [1094. 拼车](https://leetcode-cn.com/problems/car-pooling/)
+
+**构造差分数组** `diff`**，就可以快速进行区间增减的操作**
+
+假设你是一位顺风车司机，车上最初有 capacity 个空座位可以用来载客。由于道路的限制，车 只能 向一个方向行驶（也就是说，不允许掉头或改变方向，你可以将其想象为一个向量）。
+
+这儿有一份乘客行程计划表 trips[][]，其中 trips[i] = [num_passengers, start_location, end_location] 包含了第 i 组乘客的行程信息：
+
+必须接送的乘客数量；
+乘客的上车地点；
+以及乘客的下车地点。
+这些给出的地点位置是从你的 初始 出发位置向前行驶到这些地点所需的距离（它们一定在你的行驶方向上）。
+
+请你根据给出的行程计划表和车子的座位数，来判断你的车是否可以顺利完成接送所有乘客的任务（当且仅当你可以在所有给定的行程中接送所有乘客时，返回 true，否则请返回 false）。
+
+```
+    def carPooling(self, trips, capacity):
+        """
+        :type trips: List[List[int]]
+        :type capacity: int
+        :rtype: bool
+        """
+        diffs = [0] * 1001
+        for trip in trips:
+            diffs[trip[1]] += trip[0]
+            diffs[trip[2]] -= trip[0]
+        sum = 0
+        for ele in diffs:
+            sum += ele
+            if sum > capacity:
+                return False
+        return True
+```
+
+
+
+### [1109. 航班预订统计](https://leetcode-cn.com/problems/corporate-flight-bookings/)
+
+这里有 n 个航班，它们分别从 1 到 n 进行编号。
+
+有一份航班预订表 bookings ，表中第 i 条预订记录 bookings[i] = [firsti, lasti, seatsi] 意味着在从 firsti 到 lasti （包含 firsti 和 lasti ）的 每个航班 上预订了 seatsi 个座位。
+
+请你返回一个长度为 n 的数组 answer，里面的元素是每个航班预定的座位总数。
+
+```
+    def corpFlightBookings(self, bookings, n):
+        """
+        :type bookings: List[List[int]]
+        :type n: int
+        :rtype: List[int]
+        """
+        answer = [0] * n
+        for book in bookings:
+            answer[book[0] - 1] += book[2]
+            if book[1] < n:
+                answer[book[1]] -= book[2]
+        for i in range(1, n):
+            answer[i] += answer[i - 1]
+        return answer
+```
+
