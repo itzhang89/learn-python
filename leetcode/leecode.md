@@ -48,14 +48,14 @@
 
 2. 通过Numpy 模块
 
-   ```
+   ```python
    import numpy as np
    arr = np.empty(10, dtype=object) 
    ```
 
 3. 通过方法来初始化
 
-   ```
+   ```python
    arr_num = [0] * 5
    print(arr_num)
     
@@ -137,7 +137,7 @@
 2. 依次的采用2个指针遍历数组
 3. 快的数组依次找出不同的元素，然后将元素复制到慢的元素位置
 
-```
+```python
     def removeDuplicates(self, nums: List[int]) -> int:
         slow, fast = 0, 1
         while fast < len(nums):
@@ -165,7 +165,7 @@
 3. 当2个指针相遇的时候，推出循环。
 4. 返回获得更小的两个指针长度+1
 
-```
+```python
     def removeElement(self, nums: List[int], val: int) -> int:
         i, j = 0, len(nums) - 1
         while i <= j:
@@ -201,7 +201,7 @@
 
 ### [83. 删除排序链表中的重复元素](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list/)
 
-```
+```python
     def deleteDuplicates(self, head: ListNode) -> ListNode:
         slow, fast = head, head
         while fast:
@@ -217,7 +217,7 @@
 
 同前面一样，过滤0的元素并且向前移动，到末尾都填充0
 
-```
+```python
     def moveZeroes(self, nums: List[int]) -> None:
         slow, fast = 0, 0
         while fast < len(nums):
@@ -245,7 +245,7 @@
 
 这种方法的时间复杂度为O(n) + O(n2)，时间上过不去
 
-```
+```python
     def subarraySum(self, nums, k):
         preSumNums = [0] * (len(nums) + 1)
         i, cnt = 0, 0
@@ -266,7 +266,7 @@
 
 将计算 presum[j] - presum[i] = k，通过Hash 来转换。将**前缀和放入到Hash中减少一次嵌套的循环**。
 
-```
+```python
     def subarraySum(self, nums, k):
         preSumNums = [0] * (len(nums) + 1)
         cntDict = {0: 1}
@@ -281,7 +281,7 @@
 
 优化点，就是不重新定义新数组，复用现有nums数组
 
-```
+```python
     def subarraySum(self, nums, k):
         i, cnt = 1, 0
         cntDict = {0: 1}
@@ -324,7 +324,7 @@ int sumRegion(int row1, int col1, int row2, int col2) 返回 左上角 (row1, co
 
 请你根据给出的行程计划表和车子的座位数，来判断你的车是否可以顺利完成接送所有乘客的任务（当且仅当你可以在所有给定的行程中接送所有乘客时，返回 true，否则请返回 false）。
 
-```
+```python
     def carPooling(self, trips, capacity):
         """
         :type trips: List[List[int]]
@@ -353,7 +353,7 @@ int sumRegion(int row1, int col1, int row2, int col2) 返回 左上角 (row1, co
 
 请你返回一个长度为 n 的数组 answer，里面的元素是每个航班预定的座位总数。
 
-```
+```python
     def corpFlightBookings(self, bookings, n):
         """
         :type bookings: List[List[int]]
